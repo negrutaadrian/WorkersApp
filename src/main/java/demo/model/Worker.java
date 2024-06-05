@@ -7,11 +7,13 @@ public class Worker {
     @Id
     private String hostname;
     private long lastHeartBeat;
+    private String service;
 
     public Worker() {
     }
-    public Worker(String hostname) {
+    public Worker(String hostname, String service ) {
         this.hostname = hostname;
+        this.service = service;
         this.lastHeartBeat = System.currentTimeMillis();
     }
 
@@ -29,4 +31,14 @@ public class Worker {
     public void setLastHeartbeat(long lastHeartBeat) {
         this.lastHeartBeat = lastHeartBeat;
     }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+
 }

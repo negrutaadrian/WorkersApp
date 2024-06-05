@@ -11,12 +11,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @RestController
 public class LoadBalancer {
@@ -24,13 +26,14 @@ public class LoadBalancer {
     /* LoadBalancer will request worker for delegation of a work */
     /* If the worker will not respond, then the request is sent to a random */
 
+
     @Value("${registry.url}") 
     private String registryUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final Random random = new Random();
 
-    /* Endpoint to set a worker */
+    /* Endpoint to set a worker (change to take a list of workers that will be instanciated) */
     @PostMapping("/setWorker")
     public ResponseEntity<String> setWorker(@RequestBody Worker worker) {
         try {
@@ -44,36 +47,49 @@ public class LoadBalancer {
         }
     }
 
-    /* Implement just the first logic of the Monitoring part */
-    @GetMapping("/hi")
-    public ResponseEntity<String> delegateTask () {
-        List<Worker> workers = getActiveWorkers();
-        
+    /* 
+
+    If it will not find the worker with the specified name 
+    If not found -> find a random worker that is responsive for the asked service 
+
+    */
+    @GetMapping("/service/hello/{nameWorker}")
+    public ResponseEntity<String> delegateHelloTask(@PathVariable String nameWorker) {
+        List<Worker> workers = getActiveWorkers().stream()
+                .filter(worker -> "hello".equals(worker.getService()))
+                .collect(Collectors.toList());
+
         if (workers == null || workers.isEmpty()) {
-            return new ResponseEntity<>("No workers available", HttpStatus.SERVICE_UNAVAILABLE);
+            return new ResponseEntity<>("No workers available for hello service", HttpStatus.SERVICE_UNAVAILABLE);
         }
 
-        return delegateTaskToWorker(workers);
+        Worker selectedWorker = workers.stream()
+                .filter(worker -> worker.getHostname().equals(nameWorker))
+                .findFirst()
+                .orElse(workers.get(random.nextInt(workers.size())));
+
+        return new ResponseEntity<>("Hello, " + selectedWorker.getHostname(), HttpStatus.OK);
     }
-    
-    private ResponseEntity<String> delegateTaskToWorker(List<Worker> workers) {
-        /* If there is a worker, then assign to him  */
-        while (!workers.isEmpty()) {
-            Worker worker = workers.get(random.nextInt(workers.size()));
-            try {
-                ResponseEntity<String> response = restTemplate.getForEntity("http://" + worker.getHostname() + ":8081/task", String.class);
-                // If there is a succesful assignement of the task for the worker, then return the response 
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    return response;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to delegate task to " + worker.getHostname() + ": " + e.getMessage());
-                workers.remove(worker);
-            }
+
+    // Endpoint to delegate chat task to a worker
+    @GetMapping("/service/chat/{nameWorker}")
+    public ResponseEntity<String> delegateChatTask(@PathVariable String nameWorker) {
+        List<Worker> workers = getActiveWorkers().stream()
+                .filter(worker -> "chat".equals(worker.getService()))
+                .collect(Collectors.toList());
+
+        if (workers == null || workers.isEmpty()) {
+            return new ResponseEntity<>("No workers available for chat service", HttpStatus.SERVICE_UNAVAILABLE);
         }
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("All workers failed");
+
+        Worker selectedWorker = workers.stream()
+                .filter(worker -> worker.getHostname().equals(nameWorker))
+                .findFirst()
+                .orElse(workers.get(random.nextInt(workers.size())));
+
+        return new ResponseEntity<>("Chat, " + selectedWorker.getHostname(), HttpStatus.OK);
     }
-    
+
     private List<Worker> getActiveWorkers() {
         /* Will return the list of active workers */
         try {

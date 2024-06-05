@@ -38,6 +38,9 @@ public class RegisteryController {
         
     }
 
+    /* Will handle the logic that if a new worker is created and registery receive the first alive sign from it
+       then it will be added to the workersRepo in order to be also available for the load balancer */
+    
     @PostMapping()
     public ResponseEntity<Worker> heartbeat(@RequestBody Worker worker) {
         /* It will handle the /setWorker from LoadBalancer that will create a new worker in the repository  */        
@@ -48,6 +51,7 @@ public class RegisteryController {
             workersRepo.save(existingWorker);
         } else {
             worker.setLastHeartbeat(System.currentTimeMillis());
+            worker.setService(worker.getService());
             workersRepo.save(worker);
         }
         return new ResponseEntity<>(worker, HttpStatus.OK);

@@ -16,9 +16,20 @@ public class WorkerController {
     private String hostname;
     private Worker self;
 
+
     @Value("${registry.url}")
     private String registryUrl; // will use to send heartbeat and be present in the list of active workers 
     private final RestTemplate restTemplate = new RestTemplate();
+
+
+    public WorkerController() {
+        this.hostname = System.getenv("HOSTNAME");
+        String service = System.getenv("SERVICE"); 
+        
+        if (this.hostname != null && service != null) {
+            this.self = new Worker(hostname, service);
+        }
+    }
 
     @Scheduled(fixedRate = 120000) 
     public void sendHeartbeat() {
