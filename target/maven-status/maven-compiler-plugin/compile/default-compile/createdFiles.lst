@@ -1,7 +1,13 @@
 demo/controller/RegisteryController.class
 demo/controller/LoadBalancer$1.class
 demo/model/Worker.class
+demo/model/WorkerLaunchRequest.class
 demo/DemoApp.class
 demo/controller/LoadBalancer.class
-demo/controller/WorkerRepository.class
+demo/model/Node.class
+demo/repository/WorkerRepository.class
 demo/controller/WorkerController.class
+demo/controller/Server$1.class
+demo/repository/NodeRepository.class
+demo/controller/Server.class
+demo/controller/NodeController.class

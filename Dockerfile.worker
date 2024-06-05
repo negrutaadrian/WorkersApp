@@ -1,0 +1,16 @@
+# Dockerfile.worker
+
+# Use an appropriate base image
+FROM openjdk:17
+WORKDIR /app
+
+# Set environment variables
+ENV HOSTNAME=worker
+ENV SERVICE=my-service
+ENV PORT=8000  
+
+# Copy the built JAR file from the previous build stage
+COPY target/*.jar ./app.jar
+
+# Command to run the application
+CMD ["java", "-jar", "app.jar"]

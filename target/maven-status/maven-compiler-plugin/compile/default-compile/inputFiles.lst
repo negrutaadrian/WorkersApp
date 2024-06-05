@@ -1,6 +1,11 @@
 /Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/controller/RegisteryController.java
 /Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/controller/LoadBalancer.java
-/Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/controller/WorkerRepository.java
+/Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/controller/NodeController.java
+/Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/model/WorkerLaunchRequest.java
 /Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/DemoApp.java
+/Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/repository/NodeRepository.java
+/Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/model/Node.java
+/Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/repository/WorkerRepository.java
 /Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/controller/WorkerController.java
+/Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/controller/Server.java
 /Users/negrutaadrian/Desktop/LoginApp/src/main/java/demo/model/Worker.java

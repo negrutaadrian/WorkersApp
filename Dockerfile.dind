@@ -1,0 +1,11 @@
+FROM docker:stable-dind
+
+# Install curl for signaling the registry
+RUN apk add --no-cache curl
+
+# Copy the node registration script
+COPY start_docker_and_signal.sh /usr/local/bin/start_docker_and_signal.sh
+RUN chmod +x /usr/local/bin/start_docker_and_signal.sh
+
+# Start Docker and the node registration script
+CMD ["/usr/local/bin/start_docker_and_signal.sh"]

@@ -1,5 +1,4 @@
 package demo.controller;
-
 import demo.model.Worker;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,8 +51,8 @@ public class LoadBalancer {
     If not found -> find a random worker that is responsive for the asked service 
 
     */
-    @GetMapping("/service/hello/{nameWorker}")
-    public ResponseEntity<String> delegateHelloTask(@PathVariable String nameWorker) {
+    @GetMapping("/service/hello")
+    public ResponseEntity<String> delegateHelloTask() {
         List<Worker> workers = getActiveWorkers().stream()
                 .filter(worker -> "hello".equals(worker.getService()))
                 .collect(Collectors.toList());
@@ -63,17 +61,13 @@ public class LoadBalancer {
             return new ResponseEntity<>("No workers available for hello service", HttpStatus.SERVICE_UNAVAILABLE);
         }
 
-        Worker selectedWorker = workers.stream()
-                .filter(worker -> worker.getHostname().equals(nameWorker))
-                .findFirst()
-                .orElse(workers.get(random.nextInt(workers.size())));
-
+        Worker selectedWorker = workers.get(random.nextInt(workers.size()));
         return new ResponseEntity<>("Hello, " + selectedWorker.getHostname(), HttpStatus.OK);
     }
 
     // Endpoint to delegate chat task to a worker
-    @GetMapping("/service/chat/{nameWorker}")
-    public ResponseEntity<String> delegateChatTask(@PathVariable String nameWorker) {
+    @GetMapping("/service/chat")
+    public ResponseEntity<String> delegateChatTask(@RequestBody String message) {
         List<Worker> workers = getActiveWorkers().stream()
                 .filter(worker -> "chat".equals(worker.getService()))
                 .collect(Collectors.toList());
@@ -82,12 +76,21 @@ public class LoadBalancer {
             return new ResponseEntity<>("No workers available for chat service", HttpStatus.SERVICE_UNAVAILABLE);
         }
 
-        Worker selectedWorker = workers.stream()
-                .filter(worker -> worker.getHostname().equals(nameWorker))
-                .findFirst()
-                .orElse(workers.get(random.nextInt(workers.size())));
+        Worker selectedWorker = workers.get(random.nextInt(workers.size()));
+        return delegateTaskToWorker(selectedWorker, message);
+    }
 
-        return new ResponseEntity<>("Chat, " + selectedWorker.getHostname(), HttpStatus.OK);
+    private ResponseEntity<String> delegateTaskToWorker(Worker worker, String taskPayload) {
+        try {
+            String url = "http://" + worker.getHostname() + ":8081/task";
+            ResponseEntity<String> response = restTemplate.postForEntity(url, taskPayload, String.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response;
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to delegate task to " + worker.getHostname() + ": " + e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Failed to delegate task to worker: " + worker.getHostname());
     }
 
     private List<Worker> getActiveWorkers() {

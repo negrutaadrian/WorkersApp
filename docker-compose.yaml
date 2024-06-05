@@ -1,18 +1,53 @@
-version: "3.8"
+version: '3.9'
+
 services:
-  rest-user:
-    # image: gestiondeprojet-loginapp:latest
+  dind:
+    build:
+      context: .
+      dockerfile: Dockerfile.dind
+    privileged: true
+    hostname: dind
+    environment:
+      - REGISTRY_URL=http://registery:8081
+      - NODE_NAME=dind-node
+    networks:
+      - lb-net
+    volumes:
+      - dind-storage:/var/lib/docker
+    ports:
+      - "2375:2375"
+      - "8000-8010:8000-8010"
+
+  registery:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rest-user
+    hostname: registery
+    environment:
+      - HOSTNAME=registery
+      - SERVICE=registery
+    networks:
+      - lb-net
     ports:
       - "8081:8081"
-  login:
+
+  server:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: login
+    environment:
+      - REGISTRY_URL=http://registery:8081
+    depends_on:
+      - dind
+      - registery
+    networks:
+      - lb-net
     ports:
-      - "8082:8081"
+      - "8080:8080"
 
+volumes:
+  dind-storage:
+
+networks:
+  lb-net:
+    driver: bridge

@@ -1,8 +1,13 @@
-docker build --pull --rm -f "Dockerfile" -t gestiondeprojet-loginapp:latest .
+#!/bin/sh
 
-docker network create -d bridge lb-net || true 
+# Build the project using Maven
+mvn clean install
 
-docker run -d -p 8081:8081 --net=lb-net --name registery gestiondeprojet-loginapp:latest
-docker run -d --net=lb-net --name worker1 -e HOSTNAME=worker1 gestiondeprojet-loginapp:latest
-docker run -d --net=lb-net --name worker2 -e HOSTNAME=worker2 gestiondeprojet-loginapp:latest
-docker run -d --net=lb-net --name worker3 -e HOSTNAME=worker3 gestiondeprojet-loginapp:latest
+# Build the Docker image for the main application
+docker build -t gestiondeprojet-loginapp:latest .
+
+# Create a Docker network for the load balancer
+docker network create -d bridge lb-net || true
+
+# Build and start the Docker Compose stack
+docker-compose up --build -d
