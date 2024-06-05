@@ -6,11 +6,13 @@ import jakarta.persistence.*;
 public class Worker {
     @Id
     private String hostname;
+    private long lastHeartBeat;
 
     public Worker() {
     }
     public Worker(String hostname) {
         this.hostname = hostname;
+        this.lastHeartBeat = System.currentTimeMillis();
     }
 
     public String getHostname() {
@@ -18,5 +20,13 @@ public class Worker {
     }
     public void setHostname(String hostname) {
         this.hostname = hostname;
+    }
+
+    public long getLastHeartbeat() {
+        return lastHeartBeat;
+    }
+    
+    public void setLastHeartbeat(long lastHeartBeat) {
+        this.lastHeartBeat = lastHeartBeat;
     }
 }
